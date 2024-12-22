@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom GPT Chat</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f4f4f9;
+        }
+        h1 {
+            color: #4CAF50;
+        }
+        #chat-box {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            background-color: white;
+            height: 300px;
+            overflow-y: scroll;
+        }
+        #message {
+            padding: 10px;
+            width: 80%;
+            margin-right: 10px;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #response {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #e9e9e9;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <h1>Chat with Custom GPT</h1>
+    <div>
+        <input type="text" id="message" placeholder="Ask something..." style="width: 80%; padding: 10px;"/>
+        <button onclick="sendMessage()">Send</button>
+    </div>
+    
+    <div id="chat-box"></div>
+
+    <div id="response"></div>
+
+    <script>
+        // Function to handle sending message and getting response
+        async function sendMessage() {
+            const message = document.getElementById('message').value;
+            if (!message.trim()) return;
+
+            // Add user message to chat
+            const chatBox = document.getElementById('chat-box');
+            chatBox.innerHTML += `<p><b>You:</b> ${message}</p>`;
+            document.getElementById('message').value = '';
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            // Show thinking message
+            document.getElementById('response').innerHTML = 'Thinking...';
+
+            try {
+                const res = await fetch('https://api.openai.com/v1/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer YOUR_API_KEY`  // Use your actual API key here
+                    },
+                    body: JSON.stringify({
+                        model: 'text-davinci-003',  // Or your fine-tuned model
+                        prompt: message,
+                        max_tokens: 150
+                    })
+                });
+                const data = await res.json();
+                const responseText = data.choices[0].text.trim();
+
+                // Display response in chat
+                chatBox.innerHTML += `<p><b>GPT:</b> ${responseText}</p>`;
+                document.getElementById('response').innerHTML = '';
+
+                // Scroll to the bottom
+                chatBox.scrollTop = chatBox.scrollHeight;
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('response').innerHTML = 'Error: Unable to get response from GPT.';
+            }
+        }
+    </script>
+</body>
+</html>
